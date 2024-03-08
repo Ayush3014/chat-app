@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import axios from 'axios';
+import { UserContext } from '../UserContext';
 
 export default function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const { setUsername: setLoggedInUsername, setId } = useContext(UserContext);
 
   return (
     <div className="bg-blue-50 h-screen flex items-center">
@@ -11,7 +13,12 @@ export default function Register() {
         onSubmit={async (e) => {
           e.preventDefault();
           try {
-            const res = await axios.post('/register', { username, password });
+            const { data } = await axios.post('/register', {
+              username,
+              password,
+            });
+            setLoggedInUsername(username);
+            setId(data.id);
           } catch (error) {
             console.error(error);
           }
