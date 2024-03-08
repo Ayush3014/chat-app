@@ -6,6 +6,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const { User } = require('./db');
+const ws = require('ws');
 
 const app = express();
 app.use(express.json());
@@ -85,4 +86,27 @@ app.post('/register', async (req, res) => {
   }
 });
 
-app.listen(3000);
+const server = app.listen(3000);
+
+const wss = new ws.WebSocketServer({ server });
+
+wss.on('connection', (connection, req) => {
+  console.log('connected');
+  const cookies = req.headers.cookie;
+
+  if (cookies) {
+    const tokenCookieStr = cookies
+      .split(';')
+      .find((str) => str.startsWith('token='));
+    if (tokenCookieStr) {
+      const token = tokenCookieStr.split('=')[1];
+      const decodedToken = jwt.verify(token, jwtSecret);
+
+      const { userId, username } = decodedToken;
+      connection.userId = userId;
+      connection.username = username;
+    }
+  }
+
+  console.log([...wss.clients].map((client) => client.username));
+});
