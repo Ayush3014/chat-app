@@ -5,6 +5,7 @@ import { UserContext } from '../UserContext';
 export default function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [isRegistered, setIsRegistered] = useState(false);
   const { setUsername: setLoggedInUsername, setId } = useContext(UserContext);
 
   return (
@@ -12,8 +13,9 @@ export default function Register() {
       <form
         onSubmit={async (e) => {
           e.preventDefault();
+          const url = isRegistered === true ? '/login' : '/register';
           try {
-            const { data } = await axios.post('/register', {
+            const { data } = await axios.post(url, {
               username,
               password,
             });
@@ -42,8 +44,21 @@ export default function Register() {
           className="block w-full rounded p-2 mb-2 border"
         />
         <button className="bg-blue-500 text-white w-full rounded-md p-2">
-          Register
+          {isRegistered ? 'LogIn' : 'Register'}
         </button>
+
+        <div className="text-center mt-2">
+          {isRegistered ? 'Not a member? ' : 'Already a member? '}
+          <button
+            onClick={() => {
+              setIsRegistered(!isRegistered);
+            }}
+          >
+            <span className="text-blue-500 underline">
+              {isRegistered ? 'Register' : 'Login'}
+            </span>
+          </button>
+        </div>
       </form>
     </div>
   );
