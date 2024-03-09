@@ -33,7 +33,8 @@ async function getUserData(req) {
 
     if (token) {
       const decodedToken = jwt.verify(token, jwtSecret);
-      resolve({ decodedToken });
+
+      resolve(decodedToken);
     } else {
       reject('No token');
     }
@@ -44,11 +45,12 @@ app.get('/messages/:userId', async (req, res) => {
   const { userId } = req.params;
   const userData = await getUserData(req);
   const ourUserId = userData.userId;
-
+  console.log(userId);
+  console.log(userData.userId);
   const messages = await Message.find({
     sender: { $in: [userId, ourUserId] },
     recipient: { $in: [userId, ourUserId] },
-  }).sort({ createdAt: -1 });
+  }).sort({ createdAt: 1 });
 
   res.json(messages);
 });
@@ -154,7 +156,7 @@ wss.on('connection', (connection, req) => {
               text,
               recipient,
               sender: connection.userId,
-              id: messageDoc._id,
+              _id: messageDoc._id,
             })
           );
         });

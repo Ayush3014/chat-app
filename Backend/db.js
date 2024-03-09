@@ -24,16 +24,20 @@ const UserSchema = new mongoose.Schema(
 
 const User = mongoose.model('User', UserSchema);
 
-const MessageSchema = new mongoose.Schema({
-  sender: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+const MessageSchema = new mongoose.Schema(
+  {
+    sender: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    recipient: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    text: String,
   },
-  recipient: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-  },
-});
+  { timestamps: true }
+);
 
 const Message = mongoose.model('Message', MessageSchema);
 

@@ -17,7 +17,7 @@ export default function Chat() {
 
   useEffect(() => {
     connectToWS();
-  }, []);
+  }, [selectedUserId]);
 
   function connectToWS() {
     const ws = new WebSocket('ws://localhost:3000');
@@ -46,13 +46,15 @@ export default function Chat() {
     if ('online' in messageData) {
       showOnlinePeople(messageData.online);
     } else if ('text' in messageData) {
-      console.log({ messageData });
-      setMessages((prev) => [
-        ...prev,
-        {
-          ...messageData,
-        },
-      ]);
+      if (messageData.sender === selectedUserId) {
+        console.log({ messageData });
+        setMessages((prev) => [
+          ...prev,
+          {
+            ...messageData,
+          },
+        ]);
+      }
     }
   }
 
@@ -71,7 +73,7 @@ export default function Chat() {
         text: newMessageText,
         sender: id,
         recipient: selectedUserId,
-        id: Date.now(),
+        _id: Date.now(),
       },
     ]);
   }
@@ -85,7 +87,9 @@ export default function Chat() {
 
   useEffect(() => {
     if (selectedUserId) {
-      axios.get('/messages/' + selectedUserId).then((res) => {});
+      axios.get('/messages/' + selectedUserId).then((res) => {
+        setMessages(res.data);
+      });
     }
   }, [selectedUserId]);
 
@@ -94,7 +98,7 @@ export default function Chat() {
   delete excludeUser[id];
 
   // remove the duplicate messages
-  const messageWithoutDup = lodash.uniqBy(messages, 'id');
+  const messageWithoutDup = lodash.uniqBy(messages, '_id');
 
   return (
     <div className="flex h-screen">
@@ -133,6 +137,7 @@ export default function Chat() {
               <div className="pt-4 overflow-y-scroll absolute inset-0 ">
                 {messageWithoutDup.map((message) => (
                   <div
+                    key={message._id}
                     className={
                       message.sender === id ? 'text-right' : 'text-left'
                     }
