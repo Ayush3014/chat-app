@@ -3,6 +3,7 @@ import Avatar from './Avatar';
 import Logo from './Logo';
 import lodash from 'lodash';
 import { UserContext } from '../UserContext';
+import axios from 'axios';
 
 export default function Chat() {
   const [ws, setWs] = useState(null);
@@ -15,11 +16,20 @@ export default function Chat() {
   const { username, id } = useContext(UserContext);
 
   useEffect(() => {
+    connectToWS();
+  }, []);
+
+  function connectToWS() {
     const ws = new WebSocket('ws://localhost:3000');
     setWs(ws);
-
     ws.addEventListener('message', handleMessage);
-  }, []);
+    ws.addEventListener('close', () => {
+      setTimeout(() => {
+        console.log('Disconnected. Trying to reconnect.');
+        connectToWS();
+      }, 1000);
+    });
+  }
 
   // to remove duplicates
   function showOnlinePeople(peopleArray) {
@@ -72,6 +82,12 @@ export default function Chat() {
       div.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (selectedUserId) {
+      axios.get('/messages/' + selectedUserId).then((res) => {});
+    }
+  }, [selectedUserId]);
 
   // remove the logged in user from the contact list
   const excludeUser = { ...onlinePeople };

@@ -27,9 +27,34 @@ const registerSchema = zod.object({
   password: zod.string(),
 });
 
+async function getUserData(req) {
+  return new Promise((resolve, reject) => {
+    const token = req.cookies?.token;
+
+    if (token) {
+      const decodedToken = jwt.verify(token, jwtSecret);
+      resolve({ decodedToken });
+    } else {
+      reject('No token');
+    }
+  });
+}
+
+app.get('/messages/:userId', async (req, res) => {
+  const { userId } = req.params;
+  const userData = await getUserData(req);
+  const ourUserId = userData.userId;
+
+  const messages = await Message.find({
+    sender: { $in: [userId, ourUserId] },
+    recipient: { $in: [userId, ourUserId] },
+  }).sort({ createdAt: -1 });
+
+  res.json(messages);
+});
+
 app.get('/profile', async (req, res) => {
   const token = req.cookies?.token;
-
   if (token) {
     const decodedToken = jwt.verify(token, jwtSecret);
     res.json({ decodedToken });
